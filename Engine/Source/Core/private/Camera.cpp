@@ -6,11 +6,13 @@ namespace GameEngine::Core
 
 	Math::Matrix4x4f Camera::GetViewMatrix()
 	{
+		std::lock_guard lock(m_Mutex);
 		return Math::ViewMatrixLH(m_Position, m_ViewDir, Math::Vector3f(0.0f, 1.0f, 0.0f));
 	}
 
 	void Camera::Rotate(float dx, float dy)
 	{
+		std::lock_guard lock(m_Mutex);
         Math::Vector3f up = Math::Vector3f(0.0f, 1.0f, 0.0f);
         Math::Vector3f right = m_ViewDir.CrossProduct(up).Normalized();
         up = right.CrossProduct(m_ViewDir).Normalized();

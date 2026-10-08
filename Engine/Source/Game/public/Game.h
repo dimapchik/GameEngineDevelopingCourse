@@ -4,6 +4,7 @@
 #include <RenderThread.h>
 #include <Timer.h>
 #include <Window/IWindow.h>
+#include <ControlConfig.h>
 
 namespace GameEngine
 {
@@ -14,7 +15,8 @@ namespace GameEngine
 	public:
 		Game() = delete;
 		Game(
-			std::function<bool()> PlatformLoopFunc
+			std::function<bool()> PlatformLoopFunc,
+			const Core::ControlConfig& controls = {}
 		);
 
 	public:
@@ -27,6 +29,7 @@ namespace GameEngine
 
 	private:
 		Core::Timer m_GameTimer;
+		Core::ControlConfig m_Controls;
 		std::unique_ptr<Render::RenderThread> m_renderThread;
 		std::vector<GameObject*> m_Objects;
 	};

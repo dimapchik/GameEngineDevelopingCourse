@@ -17,16 +17,15 @@ bool WindowsMessageLoop()
 
 	while (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-
-		if (msg.message == (WM_QUIT | WM_CLOSE))
+		if (msg.message == WM_QUIT)
 		{
 			return false;
 		}
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
 	}
 
-	return msg.message != (WM_QUIT | WM_CLOSE);
+	return true;
 }
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -45,7 +44,22 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	GameEngine::Core::g_MainWindowsApplication = new GameEngine::Core::Window();
 	GameEngine::Core::g_MainWindowsApplication->Init(hInstance);
 
-	std::unique_ptr<GameEngine::Game> game = std::make_unique<GameEngine::Game>(&WindowsMessageLoop);
+	GameEngine::Core::ControlConfig controls;
+	std::wstring executablePath(32768, L'\0');
+	const DWORD pathLength = GetModuleFileNameW(nullptr, executablePath.data(), static_cast<DWORD>(executablePath.size()));
+	std::string configError;
+	if (pathLength > 0 && pathLength < executablePath.size())
+	{
+		executablePath.resize(pathLength);
+		controls.Load(std::filesystem::path(executablePath).parent_path() / L"controls.ini", configError);
+	}
+	else
+	{
+		configError = "Cannot resolve executable path; using default controls.";
+	}
+	if (!configError.empty()) OutputDebugStringA((configError + "\n").c_str());
+
+	std::unique_ptr<GameEngine::Game> game = std::make_unique<GameEngine::Game>(&WindowsMessageLoop, controls);
 
 	game->Run();
 

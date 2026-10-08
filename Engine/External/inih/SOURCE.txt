@@ -1,0 +1,4 @@
+Source: https://github.com/Blandinium/inih
+Commit: 1df81910f701c72a6c83a55f1e848272d0e1bc18
+Vendored files (unmodified): ini.c, ini.h, LICENSE.txt
+CMakeLists.txt is local integration. Multiline values are disabled for controls.

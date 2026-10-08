@@ -2,13 +2,16 @@
 #include <DefaultGeometry.h>
 #include <Game.h>
 #include <GameObject.h>
+#include <Keyboard.h>
 
 namespace GameEngine
 {
 	Game::Game(
-		std::function<bool()> PlatformLoopFunc
+		std::function<bool()> PlatformLoopFunc,
+		const Core::ControlConfig& controls
 	) :
-		PlatformLoop(PlatformLoopFunc)
+		PlatformLoop(PlatformLoopFunc),
+		m_Controls(controls)
 	{
 		Core::g_MainCamera = new Core::Camera();
 		Core::g_MainCamera->SetPosition(Math::Vector3f(0.0f, 6.0f, -6.0f));
@@ -31,23 +34,36 @@ namespace GameEngine
 
 		m_GameTimer.Reset();
 
-		bool quit = false;
-		while (!quit)
+		while (PlatformLoop())
 		{
 			m_GameTimer.Tick();
 			float dt = m_GameTimer.GetDeltaTime();
 
 			Update(dt);
 			
-			// The most common idea for such a loop is that it returns false when quit is required, or true otherwise
-			quit = !PlatformLoop();
-
 			m_renderThread->OnEndFrame();
 		}
 	}
 
 	void Game::Update(float dt)
 	{
+		auto axis = [](int positive, int negative)
+		{
+			return static_cast<float>(Core::IsKeyDown(positive)) - static_cast<float>(Core::IsKeyDown(negative));
+		};
+		Math::Vector3f forward = Core::g_MainCamera->GetViewDir().Normalized();
+		Math::Vector3f up(0.0f, 1.0f, 0.0f);
+		Math::Vector3f right = up.CrossProduct(forward).Normalized();
+		Math::Vector3f movement = forward * axis(m_Controls.forward, m_Controls.backward)
+			+ right * axis(m_Controls.right, m_Controls.left)
+			+ up * axis(m_Controls.up, m_Controls.down);
+		if (movement.GetLength() > 0.0001f)
+		{
+			float speed = m_Controls.moveSpeed;
+			if (Core::IsKeyDown(m_Controls.boost)) speed *= m_Controls.boostMultiplier;
+			Core::g_MainCamera->SetPosition(Core::g_MainCamera->GetPosition() + movement.Normalized() * (speed * dt));
+		}
+
 		for (int i = 0; i < m_Objects.size(); ++i)
 		{
 			Math::Vector3f pos = m_Objects[i]->GetPosition();

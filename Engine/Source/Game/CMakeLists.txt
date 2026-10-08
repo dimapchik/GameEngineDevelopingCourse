@@ -70,3 +70,12 @@ target_precompile_headers(Game
 		<limits>
 		<chrono>
 )
+
+add_custom_target(CopyControlsConfig
+	COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:Game>"
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		"${PROJECT_SOURCE_DIR}/Assets/Config/controls.ini"
+		"$<TARGET_FILE_DIR:Game>/controls.ini"
+	VERBATIM
+)
+add_dependencies(Game CopyControlsConfig)
