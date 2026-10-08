@@ -88,9 +88,17 @@ namespace GameEngine::Render
 		for (auto& command : m_commands[m_CurrRenderFrame])
 		{
 			command->DoTask();
+			delete command;
 		}
 
 		m_commands[m_CurrRenderFrame].clear();
+	}
+
+	void RenderThread::DestroyRenderObject(RenderObject* renderObject)
+	{
+		m_commands[m_CurMainFrame].push_back(new EnqueuedRenderCommand(
+			[this](RenderObject* object) { m_RenderEngine->DestroyRenderObject(object); },
+			renderObject));
 	}
 
 	void RenderThread::OnEndFrame()

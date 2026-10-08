@@ -8,6 +8,7 @@
 namespace GameEngine::Render
 {
 	class RenderEngine;
+	class RenderObject;
 
 	enum class ERC : uint32_t
 	{
@@ -31,6 +32,7 @@ namespace GameEngine::Render
 
 		bool IsRenderThread() const;
 		void OnEndFrame();
+		void DestroyRenderObject(RenderObject* renderObject);
 
 		size_t GetMainFrame() const { return m_CurMainFrame; }
 

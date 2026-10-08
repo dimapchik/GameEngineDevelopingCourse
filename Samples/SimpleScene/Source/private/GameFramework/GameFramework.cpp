@@ -22,6 +22,8 @@ void GameFramework::Init()
 
 	flecs::entity cubeControl = m_World.entity()
 		.set(Position{ -2.f, 0.f, 0.f })
+		.set(BoxCollider{ 1.f, 1.f, 1.f })
+		.set(CollisionState{ 0 })
 		.set(Velocity{ 0.f, 0.f, 0.f })
 		.set(Speed{ 10.f })
 		.set(FrictionAmount{ 0.9f })
@@ -35,6 +37,9 @@ void GameFramework::Init()
 
 	flecs::entity cubeMoving = m_World.entity()
 		.set(Position{ 2.f, 0.f, 0.f })
+		.set(BoxCollider{ 1.f, 1.f, 1.f })
+		.set(CollisionState{ 0 })
+		.set(Lifetime{ 15.f })
 		.set(Velocity{ 0.f, 3.f, 0.f })
 		.set(Gravity{ 0.f, -9.8065f, 0.f })
 		.set(BouncePlane{ 0.f, 1.f, 0.f, 5.f })
@@ -60,6 +65,9 @@ void GameFramework::RegisterComponents()
 	ECS_META_COMPONENT(m_World, ShiverAmount);
 	ECS_META_COMPONENT(m_World, FrictionAmount);
 	ECS_META_COMPONENT(m_World, Speed);
+	ECS_META_COMPONENT(m_World, Lifetime);
+	ECS_META_COMPONENT(m_World, BoxCollider);
+	ECS_META_COMPONENT(m_World, CollisionState);
 }
 
 void GameFramework::RegisterSystems()
