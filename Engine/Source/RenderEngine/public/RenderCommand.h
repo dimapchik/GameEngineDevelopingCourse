@@ -7,6 +7,7 @@ namespace GameEngine::Render
 	class RENDER_ENGINE_API RenderCommand
 	{
 	public:
+		virtual ~RenderCommand() = default;
 		virtual void DoTask() = 0;
 	};
 

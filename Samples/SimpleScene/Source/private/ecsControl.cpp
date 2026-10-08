@@ -37,6 +37,17 @@ void RegisterEcsControlSystems(flecs::world& world)
 		camera.ptr->SetPosition(Math::Vector3f(position.x, position.y, position.z));
 	});
 
+	world.system<Velocity, const Speed, const ControllerPtr>()
+		.each([](Velocity& velocity, const Speed& speed, const ControllerPtr& controller)
+	{
+		const float x = float(controller.ptr->IsPressed("CubeRight")) - float(controller.ptr->IsPressed("CubeLeft"));
+		const float z = float(controller.ptr->IsPressed("CubeForward")) - float(controller.ptr->IsPressed("CubeBack"));
+		const Math::Vector3f moveDir = Math::Vector3f(x, 0.f, z).Normalized();
+
+		velocity.x = moveDir.x * speed.value;
+		velocity.z = moveDir.z * speed.value;
+	});
+
 	world.system<const Position, Velocity, const ControllerPtr, const BouncePlane, const JumpSpeed>()
 		.each([&](const Position& pos, Velocity& vel, const ControllerPtr& controller, const BouncePlane& plane, const JumpSpeed& jump)
 	{
@@ -50,4 +61,3 @@ void RegisterEcsControlSystems(flecs::world& world)
 		}
 	});
 }
-

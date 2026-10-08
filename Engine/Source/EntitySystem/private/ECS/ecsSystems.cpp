@@ -10,12 +10,19 @@ namespace GameEngine::EntitySystem::ECS
 {
 	void RegisterEcsCoreSystems(flecs::world& world)
 	{
-		static const RenderThreadPtr* renderThread = world.get<RenderThreadPtr>();
+		auto* renderThread = world.get<RenderThreadPtr>()->ptr;
+
+		world.observer<RenderObjectPtr>()
+			.event(flecs::OnRemove)
+			.each([renderThread](RenderObjectPtr& object)
+		{
+			renderThread->DestroyRenderObject(object.ptr);
+		});
 
 		world.system<const GeometryPtr, RenderObjectPtr>()
-			.each([&](flecs::entity e, const GeometryPtr& geometry, RenderObjectPtr& renderObject)
+			.each([renderThread](flecs::entity e, const GeometryPtr& geometry, RenderObjectPtr& renderObject)
 		{
-			renderThread->ptr->EnqueueCommand(Render::ERC::CreateRenderObject, geometry.ptr, renderObject.ptr);
+			renderThread->EnqueueCommand(Render::ERC::CreateRenderObject, geometry.ptr, renderObject.ptr);
 			e.remove<GeometryPtr>();
 		});
 	}

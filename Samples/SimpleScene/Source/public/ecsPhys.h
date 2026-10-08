@@ -58,3 +58,20 @@ ECS_STRUCT(Speed,
 	float value;
 });
 
+ECS_STRUCT(Lifetime,
+{
+	float remaining; // Seconds.
+});
+
+// Half extents.
+ECS_STRUCT(BoxCollider,
+{
+	float x;
+	float y;
+	float z;
+});
+
+ECS_STRUCT(CollisionState,
+{
+	int32_t count;
+});

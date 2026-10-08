@@ -1,5 +1,38 @@
 local ecs = require "ecs"
 
+local colliders = ecs.query("[in] Position, [in] BoxCollider")
+local lifetimes = ecs.query("Lifetime")
+
+local function LifetimeSystem(it)
+    local timers = ecs.query_iter(lifetimes)
+    while ecs.query_next(timers) do
+        for lifetime, ent in ecs.each(timers) do
+            lifetime.remaining = lifetime.remaining - it.delta_time
+            if lifetime.remaining <= 0 then
+                ecs.delete(ent)
+            end
+        end
+    end
+end
+
+local function CollisionSystem(it)
+    for pos, box, state, ent in ecs.each(it) do
+        state.count = 0
+        local others = ecs.query_iter(colliders)
+        -- each(query) skips rows in this version of flecs-lua.
+        while ecs.query_next(others) do
+            for otherPos, otherBox, other in ecs.each(others) do
+                if ent ~= other
+                    and math.abs(pos.x - otherPos.x) <= box.x + otherBox.x
+                    and math.abs(pos.y - otherPos.y) <= box.y + otherBox.y
+                    and math.abs(pos.z - otherPos.z) <= box.z + otherBox.z then
+                    state.count = state.count + 1
+                end
+            end
+        end
+    end
+end
+
 local function rand_flt(from, to)
 	local maxNumber = 32767
     return from + (math.random(maxNumber) / maxNumber) * (to - from)
@@ -60,9 +93,13 @@ local function BounceSystem(it)
     end
 end
 
+-- Flush deletions before the other systems run.
+ecs.system(LifetimeSystem, "LifetimeSystem", ecs.PreUpdate, "[out] *()")
 ecs.system(move, "Move", ecs.OnUpdate, "Position, Velocity")
 ecs.system(gravity, "grav", ecs.OnUpdate, "Position, Velocity, Gravity, BouncePlane")
 ecs.system(FrictionSystem, "FrictionSystem", ecs.OnUpdate, "Velocity, FrictionAmount")
 ecs.system(ShiverSystem, "ShiverSystem", ecs.OnUpdate, "Position, ShiverAmount")
 ecs.system(BounceSystem, "BounceSystem", ecs.OnUpdate, "Position, Velocity, BouncePlane, Bounciness")
+ecs.system(CollisionSystem, "CollisionSystem", ecs.PostUpdate,
+    "[in] Position, [in] BoxCollider, [out] CollisionState")
 
